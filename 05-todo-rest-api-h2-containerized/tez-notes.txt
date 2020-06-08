@@ -1,0 +1,37 @@
+pom.xml has following plugin used that would help build the plugin during mvn package
+				<groupId>com.spotify</groupId>
+				<artifactId>dockerfile-maven-plugin</artifactId>
+				
+This plugin requires following option enabled in Docker for Windows - Settings - General
+	Expose daemon on tcp://localhost:2375 without TLS
+	
+docker image ls would list the image built
+λ  docker image ls
+REPOSITORY                           TAG                 IMAGE ID            CREATED             SIZE
+tezzzzz/todo-rest-api-h2             1.0.0.RELEASE       17fc0280adbc        47 seconds ago      143MB
+
+Push the image in locl machine to docker hub
+docker login
+docker push tezzzzz/todo-rest-api-h2:1.0.0.RELEASE
+Check if uploaded to hub.docker.com
+
+az group create --name container-resource-group --location westeurope
+az appservice plan create --name container-service-plan --resource-group container-resource-group --sku P1v2 --is-linux
+az webapp create --resource-group container-resource-group --plan container-service-plan --name todo-rest-api-h2-tez-container --deployment-container-image-name tezzzzz/todo-rest-api-h2:1.0.0.RELEASE
+
+Access https://todo-rest-api-h2-tez-container.azurewebsites.net/jpa/users/in28minutes/todos
+No Todos in the response
+POST following to https://todo-rest-api-h2-tez-container.azurewebsites.net/jpa/users/in28minutes/todos
+{
+  "username": "in28minutes",
+  "description": "Learn to Drive a Car",
+  "targetDate": "2030-11-09T10:49:23.566+0000",
+  "done": false
+}
+Access https://todo-rest-api-h2-tez-container.azurewebsites.net/jpa/users/in28minutes/todos
+One TODO listed
+
+On the portal take a look at 'Container Setting' for the WebApp deployed
+It talks about the image and version used, docker log, Continuous Deployment web hooks etc.
+
+az group delete --name container-resource-group --yes

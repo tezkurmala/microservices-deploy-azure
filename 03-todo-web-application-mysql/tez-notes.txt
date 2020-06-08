@@ -1,0 +1,121 @@
+docker run -d -e MYSQL_ROOT_PASSWORD=dummypassword -e MYSQL_DATABASE=todos -e MYSQL_USER=todos-user -e MYSQL_PASSWORD=dummytodos -p 3306:3306 mysql:5.7
+
+docker container ls
+
+From MYSQLShell
+\connect todos-user@localhost:3306
+password: dummytodos
+\sql
+use todos;
+
+docker container stop <container-id>
+
+docker rm <container-id>
+
+Local Mysql using Docker is done and tested.
+Now time to create MySQL in Azure.
+
+Create azure database for mysql servers from portal
+Resource group tez-database
+Server name todo-webapp-tez
+admin username todosuser
+password Abcd!234
+Full server name: todo-webapp-tez.mysql.database.azure.com
+Full username: todosuser@todo-webapp-tez
+
+mvn clean install
+mvn azure-webapp:config
+az login
+mvn azure-webapp:deploy
+
+We are actually pointing to a local db and not to Azure DB.
+So, lets see what the azure logs are saying
+
+az webapp log tail --name todo-web-application-mysql-1 --resource-group todo-web-application-mysql-rg
+
+Unable to connect errors
+
+Our application.properties has following DB connection settings but these do not work in Azure.
+spring.datasource.url=jdbc:mysql://${RDS_HOSTNAME:localhost}:${RDS_PORT:3306}/${RDS_DB_NAME:todos}?serverTimezone=UTC
+spring.datasource.username=${RDS_USERNAME:todos-user}
+spring.datasource.password=${RDS_PASSWORD:dummytodos}
+
+So, Azure App Service - Configuration - Application Settings, add
+RDS_HOSTNAME, RDS_USERNAME, RDS_PASSWORD settings by referring to the 
+
+Restart the App Service either from portal or by issuing following command
+az webapp restart --name todo-web-application-mysql-1 --resource-group todo-web-application-mysql-rg
+
+But again failed with error Caused by: java.sql.SQLException: Client with IP address '52.233.159.48' is not allowed to connect to this MySQL server.
+This is because the Web App is not allowed to talk to DB.
+
+Go to MySQL Db - Settings - Connection Security
+Set 'Allow Access to Azure Services' - Yes
+
+Restart the App Service either from portal or by issuing following command
+az webapp restart --name todo-web-application-mysql-1 --resource-group todo-web-application-mysql-rg
+
+Now failed again because the Caused by: java.sql.SQLSyntaxErrorException: Unknown database 'todos'
+To create todos database in the server, go to Bash in Azure shell
+Select Create Storage
+run mysql --version
+mysql --host todo-webapp-tez.mysql.database.azure.com --user todosuser@todo-webapp-tez -p
+enter password
+show databases;
+create database todos;
+use todos;
+
+Instead of going to Azure Shell, we can do all this from our machine but
+Client IP is to be added to Database server to allow connection.
+
+Restart the App Service either from portal or by issuing following command
+az webapp restart --name todo-web-application-mysql-1 --resource-group todo-web-application-mysql-rg
+
+Go to the we app and click Browse button or 
+Access the URL http://todo-web-application-mysql-1.azurewebsites.net/ to use the app
+Login with tez/dummy
+Add a TODO from Web app
+
+In Azure Shell Bash
+select * from todo;
+
+
+
+Instead of using Azure Shell on Azure Portal, 
+Lets connect to Azure DB from Azure CLI on local machine.
+Full server name: todo-webapp-tez.mysql.database.azure.com
+Full username: todosuser@todo-webapp-tez
+
+mysqlsh todo-webapp-tez.mysql.database.azure.com --user todosuser@todo-webapp-tez
+Enter password
+
+We will not be allowed to connect as out IP is not allowed to connect to DB service.
+So we can enable from our todo-webapp-tez Azure Database MySQL - 
+Settings - Connection Security - Firewall Rules - Add current client IP address
+
+We will now be allowed to connect to DB services directly from out local machine IP address.
+mysqlsh todo-webapp-tez.mysql.database.azure.com --user todosuser@todo-webapp-tez
+Enter password
+\sql
+use todos;
+select * from todo;
+
+We can create new DB server and DB using CLI now directly from local machine.
+az extension add --name db-up
+az mysql up -g tez-database -s cmdline-db-server-tez -d todos -u todouser -p Abcde!2345
+
+-g is resource group
+-s is the name of the server
+-d is the name of database to be created
+-u is the username
+-p is the password
+
+This is a shortcut for many things.
+1. Allowing from local machine Azure CLI
+2. Creating DB server
+3. Creating user
+4. Creating database
+5. Allowing connections from other azure services to DB server
+6. Allowing local machine to connect to database server from local ip
+So many things in a single step.
+

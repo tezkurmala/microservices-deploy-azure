@@ -1,0 +1,16 @@
+For services:
+	Azure CLI
+	run mvn clean install from 04-spring-boot-react-full-stack-h2\restful-web-services
+	mvn azure-webapp:config
+	Put port 80 for REST in pom.xml
+	mvn azure-webapp:deploy
+For front-end:
+	run npm install from 04-spring-boot-react-full-stack-h2\frontend\todo-app
+	run npm start   to check if the app can be launched http://localhost:4200
+	In 04-spring-boot-react-full-stack-h2\frontend\todo-app\src\Constants.js
+		Point the React JS app to the REST API deployed on Azure
+		set export const API_URL = 'https://rest-api-full-stack.azurewebsites.net'
+	run npm install from 04-spring-boot-react-full-stack-h2\frontend\todo-app
+	All the files are available in 04-spring-boot-react-full-stack-h2\frontend\todo-app\build
+	az webapp up --name frontend-full-stack-tez --plan ServicePlan4fa5b2b5-d9e8-4bcc --resource-group rest-api-full-stack-rg --location westeurope
+	

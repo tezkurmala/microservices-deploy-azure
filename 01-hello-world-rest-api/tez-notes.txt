@@ -1,0 +1,53 @@
+1. 
+After adding following plugin, run   azure-webapp:config from eclipse RunAs Maven or
+mvn azure-webapp:config from command line. 
+<plugin>
+    <groupId>com.microsoft.azure</groupId>
+    <artifactId>azure-webapp-maven-plugin</artifactId>
+    <version>1.7.0</version>
+</plugin>
+
+2. Configuration would be added under the above <plugin> after azure-webapp:config is complete.
+3. Modify <configuration> block as required if the auto generated is not as desired.
+					<pricingTier>B1</pricingTier>
+					<region>westeurope</region>
+4.
+Add <appSettings> under <configuration> to run the app on 80 port in azure. 
+Otherwise, it will be defaulted to 8080.
+
+					<appSettings>
+						<property>
+							<name>JAVA_OPTS</name>
+							<value>-Dserver.port=80</value>
+						</property>
+					</appSettings>
+5. Open Azure CLI 
+Switch to the right folder
+C:\Program Files\Microsoft SDKs\Azure\.NET SDK\v2.9>cd c:\ROOT\azuremicro\01-hello-world-rest-api
+and Run 'mvn package' to create the jar locally. This jar will be picked by Azure webapp plugin for deployment.
+6. From Azure CLI, Run mvn azure-webapp:deploy but this would fail because Azure login is not done.
+7. From Azure CLI, do 'az login' and make sure we are in the right subscription.
+8.
+And run the mvn azure-webapp:deploy command
+c:\ROOT\azuremicro\01-hello-world-rest-api>mvn azure-webapp:deploy
+9. Access https://hello-world-rest-api-1.azurewebsites.net/hello-world
+   https://hello-world-rest-api-1.azurewebsites.net/hello-world-bean
+
+10. Any changes done to code? Skipping tests as we are just testing deployments.
+  mvn clean install -DskipTests
+  mvn azure-webapp:deploy
+
+11. 
+To see logs on Azure Portal
+Under the App hello-world-rest-api-1
+look at Log Stream
+or Kudu console searchinig for Advanced Tools
+Through Kudu Console we can see Log Stream
+We can also do SSH into docker container 
+
+Do not want to go to Azure Portal but refer to logs from Azure CLI?
+	az webapp log tail --name hello-world-rest-api-1 --resource-group hello-world-rest-api-rg
+	
+However, Kudu Console - Environment tab - Deployment Logs - Container log, Docker log
+are more reliable and instant.
+

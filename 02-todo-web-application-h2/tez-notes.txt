@@ -1,0 +1,44 @@
+1. 
+After adding following plugin, run   azure-webapp:config from eclipse RunAs Maven or
+mvn azure-webapp:config from command line. 
+<plugin>
+    <groupId>com.microsoft.azure</groupId>
+    <artifactId>azure-webapp-maven-plugin</artifactId>
+    <version>1.7.0</version>
+</plugin>
+
+Provide inputs to select probably windows OS, java 11 and tomcat 9.0 when configuring. 
+It will add the following under configuration if done so.
+          <runtime>
+            <os>windows</os>
+            <javaVersion>11</javaVersion>
+            <webContainer>tomcat 9.0</webContainer>
+          </runtime>
+2. Configuration would be added under the above <plugin> after azure-webapp:config is complete.
+3. Modify <configuration> block as required if the auto generated is not as desired.
+					<pricingTier>B1</pricingTier>
+					<region>westeurope</region>
+					or southeastasia if not able to find resources in westeurope
+
+4.
+No <appSettings> under <configuration> to be added as tomcat deployment would take care of working on 80 port.
+
+5. Open Azure CLI 
+Switch to the right folder
+C:\Program Files\Microsoft SDKs\Azure\.NET SDK\v2.9>cd c:\ROOT\azuremicro\02-todo-web-application-h2
+and Run 'mvn package' to create the jar locally. This jar will be picked by Azure webapp plugin for deployment.
+6. From Azure CLI, Run mvn azure-webapp:deploy but this would fail because Azure login is not done.
+7. From Azure CLI, do 'az login' and make sure we are in the right subscription.
+8.
+And run the mvn azure-webapp:deploy command
+c:\ROOT\azuremicro\02-todo-web-application-h2>mvn azure-webapp:deploy
+9. Access https://02-todo-web-application-h2-1.azurewebsites.net
+Login with tez and dummy
+10. To access h2-console
+http://todo-web-application-h2-1.azurewebsites.net/h2-console
+Change JDBC URL to jdbc:h2:mem:testdb
+
+10. Any changes done to code? Skipping tests as we are just testing deployments.
+  mvn clean install -DskipTests
+  mvn azure-webapp:deploy
+

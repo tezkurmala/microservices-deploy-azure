@@ -1,0 +1,26 @@
+az group create --name docker-compose-resource-group --location westeurope
+az appservice plan create --name docker-compose-service-plan --sku P1v2 --resource-group docker-compose-resource-group --is-linux
+
+from the appropriate folder haveing the docker-compose file
+az webapp create --resource-group docker-compose-resource-group --plan docker-compose-service-plan --name todo-rest-api-mysql-docker-compose --multicontainer-config-type compose --multicontainer-config-file docker-compose.yaml
+	The flag indicates that we have multiple containers and are specified in docker-compose file --multicontainer-config-type compose
+	The compose file is specified here --multicontainer-config-file docker-compose.yaml
+
+Access https://todo-rest-api-mysql-docker-compose.azurewebsites.net/jpa/users/in28minutes/todos
+No Todos in the response
+POST following to https://todo-rest-api-mysql-docker-compose.azurewebsites.net/jpa/users/in28minutes/todos
+{
+  "username": "in28minutes",
+  "description": "Learn to Drive a Car",
+  "targetDate": "2030-11-09T10:49:23.566+0000",
+  "done": false
+}
+Access https://todo-rest-api-h2-tez-container.azurewebsites.net/jpa/users/in28minutes/todos
+One TODO listed
+
+On the portal take a look at 'Container Setting' for the WebApp deployed
+It talks about the compose configuration, images and versions used, docker log, Continuous Deployment web hooks etc.
+
+
+To delete the resource group
+az group delete --name docker-compose-resource-group --yes

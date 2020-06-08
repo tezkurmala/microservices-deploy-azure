@@ -1,0 +1,52 @@
+https://hello-world-rest-api-v2-tez.azurewebsites.net/hello-world-bean-list
+
+This returns the Azure Instance ID along with Hello world message array.
+InstanceInformationService loads the instance information by reading the environment variable WEBSITE_INSTANCE_ID.
+
+Now we shall scale out and increase the number of instances.
+
+Web App - Scale Out - Manual Scale - Instance Count - 2 - Save
+To see the Azure instance ID changing, run
+curl https://hello-world-rest-api-v2-tez.azurewebsites.net/hello-world-bean-list
+Instance ID would not change if browser is used. This is because 
+the Web App - Configuration - General Settings - ARR Affinity is set ON. This enables sticky communication which is good for non-replication session stateful applications.
+For REST APIs, we can have ARR Affinity to OFF. 
+https://hello-world-rest-api-v2-tez.azurewebsites.net/hello-world-bean-list
+Now Browser also would see randomly instance changing.
+
+
+Web App - Scale Out - Custom Auto Scale would allow settings to Scale out and In based on certain conditions.
+Eg: When Average CPU usage is 60% for more than 10 mins, Increase 1 CPU and Wait/Cool Down before scaling one more.
+The same can be done to Scale In too.
+
+
+Web App- Deployment Slots for Staging and Production
+					<deploymentSlot>
+						<name>stage</name>
+						<configurationSource>parent</configurationSource>
+					</deploymentSlot>
+parent here means to take the configuration of production if any configuration is not provided in stage.
+
+Deploy again and a stage environment will be created. This will be evident in
+Web App - Deployment Slots - The stag environment has -stage post fixed to the server name.
+https://hello-world-rest-api-v2-tez.azurewebsites.net/hello-world-bean-list
+https://hello-world-rest-api-v2-tez-stage.azurewebsites.net/hello-world-bean-list
+
+From Deployment slots, click the stage environment.
+Any Configuration - Application settings added in Stage environment, if not to be copied to production env is to marked as "Deployment slot setting".
+Settings marked with "Deployment slot setting" will not be copied while swapping.
+In other words, they will be retained and not overriden.
+Web App - Deployment Slots - "Swap" will allow Deploying the code from Stage to Prod seamlessly.
+Stage is Blue
+Prod is Green
+Blue-Green Deployment - No down time because of this Swapping.
+You test in Stage and the promote to Production
+
+Web App - Deployment Slots also allows Canary Deployment.
+We forward the Traffic from Prod url to stage URL just to test if everything is fine from Staging env.
+We can adjust the Traffic percentage by reducing from 100% production to 80% and 20% to stage.
+So 20% of the production traffic will be deviated to stage environment.
+Once we have good condifence, then we can do the Swap to copy the artifacts from Stage to Prod.
+Just make sure Stage environment is also Prod db when trying Canary deployment.
+Code is different in Stage when compard to Prod but DB has to be same as Prod.
+
